@@ -1,2 +1,2 @@
-# SUAI_Lab
+# SUAI_Labs
 это лабы
