@@ -31,7 +31,7 @@ void print_bin(unsigned int n) {
 int main() {
   int count = 0;               // счетчик слов в кодовой книге
   int next_free = 0;           // следующее свободное слово
-  int size = pow(2, N);        // максимальное количество кодовых слов
+  const int size = pow(2, N);  // максимальное количество кодовых слов
   int mark[size] = {FREE};     // отметки об использовании кодовых слов
   int CodeBook[size] = {FREE}; // кодовая книга
 
