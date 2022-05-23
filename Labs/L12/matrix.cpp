@@ -1,20 +1,25 @@
+#include <cstdlib> // для exit()
 #include "matrix.h"
 
+// class Matrix
 
+// конструктор по умолчанию
 Matrix::Matrix(unsigned int size, double def) {
     if (size > 0) {
       arr.resize(size);
       for (int i = 0; i < size; i++) {
         arr[i].resize(size);
         if (def) {
-          fill(arr[i].begin(), arr[i].end(), def); 
+          fill(arr[i].begin(), arr[i].end(), def); // заполение строки полностью значением по умолчанию
         }
       }
     } else {
       cerr << "Error in class constructor: Matrix is not square" << endl;
+      exit(1);
     }
 }
 
+// конструктор от двумерного массива
 Matrix::Matrix(vector <vector <double>> temp):
   Matrix (get_size(temp)) {
     arr = temp;
@@ -24,20 +29,26 @@ const unsigned int Matrix::size() {
   return arr.size();
 }
 
+// сеттеры
+
 Matrix& Matrix::set(unsigned int x, unsigned int y, double value) {
     if (x < arr.size() && y < arr.size()) {
       arr[y][x] = value;
     } else {
     cerr << "Error in 'set' operator: Invalid index" << endl;
+    exit(1);
   }
   return *this;
 }
 
+// установить новый двумерный массив в матрицу
+// важно чтобы он был того же размера
 Matrix& Matrix::set(vector <vector <double>> temp) {
   if (get_size(temp) == arr.size()) {
     arr = temp;
   } else {
     cerr << "Error in 'set' operator: Target matrix has different size" << endl;
+    exit(1);
   }
   return *this;
 }
@@ -47,15 +58,19 @@ Matrix& Matrix::set(Matrix& m) {
   return *this;
 }
 
+// геттеры
 
 double Matrix::get(unsigned int x, unsigned int y) {
     if (x < arr.size() && y < arr.size()) {
       return arr[y][x];
     } else {
     cerr << "Error in 'get' operator: Invalid index" << endl;
+    exit(1);
   }
 }
 
+// получение размера двумерного массива (не матрицы)
+// если двумерный массив не квадратный - 0
 unsigned int get_size(vector <vector <double>> arr) {
   unsigned int size = arr.size();
   for (int i = 0; i < size; i++) {
@@ -73,7 +88,9 @@ void Matrix::print() {
   cout << endl;
 }
 
+// преобразования
 
+// унарный минус (смена знаков элементов)
 Matrix operator-(const Matrix &m) {
   Matrix temp(m);
   for (int x = 0; x < temp.arr.size(); x++)
@@ -82,12 +99,14 @@ Matrix operator-(const Matrix &m) {
 	return temp;
 }
 
-void swap(double *d1, double *d2) { 
+void swap(double *d1, double *d2) { // меняем местами два элемента матрица
   double temp = *d1;
   *d1 = *d2;
   *d2 = temp;
 }
 
+// транспонирование матрицы
+// отзеркаливание относительно главной диагонали
 Matrix Matrix::transpose() {
   Matrix temp(*this);
   for (int y = 0; y < this->size() - 1; y++) {
@@ -98,6 +117,9 @@ Matrix Matrix::transpose() {
   return temp;
 }
 
+// нахождение минора
+// это короче матрица с вычеркнутым столбцом с индексом x
+// и вычеркнутой строкой с индексом y
 Matrix Matrix::minor(int _y, int _x) {
   Matrix temp(arr.size() - 1);
   bool skip_x, skip_y = 0;
@@ -112,6 +134,8 @@ Matrix Matrix::minor(int _y, int _x) {
   return temp;
 }
 
+// определитель матрицы (рекурсивно)
+// два базовых случая и рекурсия для матриц >= 3
 const double Matrix::determinant() {
   switch (arr.size()) {
     case 1:
@@ -128,6 +152,8 @@ const double Matrix::determinant() {
   }
 }
 
+// матрица миноров
+// каждый элемент это определитель минора по индексу этого элемента
 Matrix Matrix::minor_matrix() {
   Matrix temp(arr.size());
   for (int y = 0; y < arr.size(); y ++) {
@@ -138,6 +164,8 @@ Matrix Matrix::minor_matrix() {
   return temp;
 }
 
+// матрица алгебраических дополнений
+// просто матрица миноров но с переменой знаков по диагонали
 Matrix Matrix::algebraic_additions() {
   Matrix temp = this->minor_matrix();
   for (int x = 0; x < arr.size(); x++) {
@@ -148,12 +176,16 @@ Matrix Matrix::algebraic_additions() {
   return temp;
 }
 
+// обратная матрица (самое сложное)
+// надо поделить транспонированую матрицу алгебраических
+// дополнений на определитель исходной матрицы
 Matrix Matrix::inverse() {
   Matrix alg_add_T = this->algebraic_additions().transpose();
   alg_add_T /= this->determinant();
   return alg_add_T;
 }
 
+// операторы
 
 Matrix& Matrix::operator+=(const Matrix& m) {
     if (arr.size() == m.arr.size()) {
@@ -164,6 +196,7 @@ Matrix& Matrix::operator+=(const Matrix& m) {
       }
     } else {
       cerr << "Error in + operator: Matrices have different sizes" << endl;
+      exit(1);
     }
   return *this;
 }
@@ -173,10 +206,12 @@ Matrix& Matrix::operator-=(const Matrix& m) {
       *this += -m;
     } else {
       cerr << "Error in - operator: Matrices have different sizes" << endl;
+      exit(1);
     }
   return *this;
 }
 
+// a + b
 Matrix operator+(Matrix a, const Matrix& b) {
   a += b;
   return a;
@@ -202,6 +237,7 @@ Matrix& Matrix::operator*=(const Matrix& right) {
     *this = result;
   } else {
     cerr << "Error in * operator: Matrices have different sizes" << endl;
+    exit(1);
   }
   return *this;
 }
@@ -225,6 +261,7 @@ Matrix operator*(Matrix a, const double &b) {
   return a;
 }
 
+// деление матрицы на матрицу
 
 Matrix& Matrix::operator/=(const Matrix &b) {
   *this *= Matrix(b).inverse();
